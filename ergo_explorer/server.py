@@ -31,7 +31,7 @@ from ergo_explorer.prompts import (
 )
 
 # Create MCP server
-mcp = FastMCP(SERVER_NAME, dependencies=SERVER_DEPENDENCIES, port=SERVER_PORT)
+mcp = FastMCP(SERVER_NAME, dependencies=SERVER_DEPENDENCIES)
 
 # Register MCP tools
 mcp.tool()(get_address_balance)
