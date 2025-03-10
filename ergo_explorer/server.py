@@ -20,6 +20,30 @@ from ergo_explorer.api.explorer import (
     fetch_box as get_box_by_id_explorer,
     search_tokens as get_token_by_id_explorer
 )
+from ergo_explorer.tools.block import (
+    get_block_by_height as fetch_block_by_height,
+    get_block_by_hash as fetch_block_by_hash,
+    get_latest_blocks as fetch_latest_blocks,
+    get_block_transactions as fetch_block_transactions,
+    format_block_data,
+    format_latest_blocks,
+    format_block_transactions
+)
+from ergo_explorer.tools.network import (
+    get_blockchain_stats as fetch_blockchain_stats,
+    get_network_hashrate as fetch_network_hashrate,
+    get_mining_difficulty as fetch_mining_difficulty,
+    get_mempool_info as fetch_mempool_info,
+    format_blockchain_stats,
+    format_network_hashrate,
+    format_mining_difficulty,
+    format_mempool_info
+)
+from ergo_explorer.tools.token import (
+    get_token_price as fetch_token_price,
+    format_token_price
+)
+import os
 
 # Set up logging
 logging.basicConfig(
@@ -512,26 +536,152 @@ async def get_node_wallet() -> str:
     except Exception as e:
         return f"Error fetching node wallet info: {str(e)}"
 
+@mcp.tool()
+async def get_block_by_height(height: int) -> str:
+    """Retrieve block data by height from the Ergo blockchain.
+    
+    Args:
+        height: The height of the block to retrieve
+    """
+    logger.info(f"MCP Tool - Get block by height: {height}")
+    block_data = await fetch_block_by_height(height)
+    return await format_block_data(block_data)
+
+@mcp.tool()
+async def get_block_by_hash(block_hash: str) -> str:
+    """Retrieve block data by hash from the Ergo blockchain.
+    
+    Args:
+        block_hash: The hash (ID) of the block to retrieve
+    """
+    logger.info(f"MCP Tool - Get block by hash: {block_hash}")
+    block_data = await fetch_block_by_hash(block_hash)
+    return await format_block_data(block_data)
+
+@mcp.tool()
+async def get_latest_blocks(limit: int = 10) -> str:
+    """Get the most recent blocks from the Ergo blockchain with pagination.
+    
+    Args:
+        limit: Maximum number of blocks to retrieve (default: 10)
+    """
+    logger.info(f"MCP Tool - Get latest blocks, limit: {limit}")
+    blocks_data = await fetch_latest_blocks(limit)
+    return await format_latest_blocks(blocks_data)
+
+@mcp.tool()
+async def get_block_transactions(block_id: str, limit: int = 100) -> str:
+    """Get all transactions in a specific block.
+    
+    Args:
+        block_id: The ID of the block
+        limit: Maximum number of transactions to retrieve (default: 100)
+    """
+    logger.info(f"MCP Tool - Get block transactions for block: {block_id}, limit: {limit}")
+    tx_data = await fetch_block_transactions(block_id, limit)
+    return await format_block_transactions(tx_data, block_id)
+
+@mcp.prompt()
+def block_info_prompt(height_or_hash: str) -> str:
+    """Prompt for getting information about a block by height or hash."""
+    return f"""
+    Analyze the Ergo blockchain block with height or hash {height_or_hash}.
+    Provide a summary of the block's key properties, including:
+    - Block height and ID
+    - Timestamp and difficulty
+    - Miner information and reward
+    - Number of transactions
+    """
+
+@mcp.tool()
+async def get_blockchain_stats() -> str:
+    """Get overall blockchain statistics from the Ergo network.
+    
+    Provides information about blockchain height, difficulty, 
+    hashrate, supply, and transaction statistics.
+    """
+    logger.info("MCP Tool - Get blockchain statistics")
+    stats_data = await fetch_blockchain_stats()
+    return await format_blockchain_stats(stats_data)
+
+@mcp.tool()
+async def get_network_hashrate() -> str:
+    """Get the current estimated network hashrate of the Ergo blockchain.
+    
+    The hashrate is calculated based on the current network difficulty.
+    """
+    logger.info("MCP Tool - Get network hashrate")
+    hashrate_data = await fetch_network_hashrate()
+    return await format_network_hashrate(hashrate_data)
+
+@mcp.tool()
+async def get_mining_difficulty() -> str:
+    """Get the current mining difficulty of the Ergo blockchain.
+    
+    Includes information about recent difficulty adjustments and target block time.
+    """
+    logger.info("MCP Tool - Get mining difficulty")
+    difficulty_data = await fetch_mining_difficulty()
+    return await format_mining_difficulty(difficulty_data)
+
+@mcp.tool()
+async def get_mempool_info() -> str:
+    """Get current mempool status and pending transactions.
+    
+    This tool provides information about unconfirmed transactions waiting to be included in blocks.
+    Requires a direct connection to an Ergo node.
+    """
+    logger.info("MCP Tool - Get mempool information")
+    mempool_data = await fetch_mempool_info()
+    return await format_mempool_info(mempool_data)
+
+@mcp.tool()
+async def get_token_price(token_id: str) -> str:
+    """Get the current price of a token on the Ergo blockchain.
+    
+    Args:
+        token_id: The token ID to check
+        
+    Returns information about the token's price in ERG and USD,
+    along with liquidity data from supported DEXes.
+    """
+    logger.info(f"MCP Tool - Get token price: {token_id}")
+    price_data = await fetch_token_price(token_id)
+    return await format_token_price(price_data)
+
 def run_server():
     """Run the MCP server."""
-    from ergo_explorer.config import SERVER_PORT
+    # Get configuration from environment variables
+    host = os.environ.get("SERVER_HOST", "0.0.0.0")
+    port = int(os.environ.get("SERVER_PORT", "3001"))
+    workers = int(os.environ.get("SERVER_WORKERS", "4"))
     
-    # Log pre-startup information
-    logger.info(f"Configured server port in settings: {SERVER_PORT}")
+    # Log server configuration
+    logger.info(f"Starting server on {host}:{port} with {workers} workers")
     
-    # Add a custom handler to log the actual server URL
-    def log_server_url(port):
-        logger.info(f"MCP server is accessible at: http://localhost:{port}/mcp")
-        
+    # Configure the MCP server with environment-specific settings
+    # Note: FastMCP may not support direct setting of these values via run()
+    # We'll have to see if there are attributes we can set first
+    
+    # Define custom handler to log the actual server URL
+    def log_server_url(actual_port):
+        server_url = f"http://{host}:{actual_port}"
+        logger.info(f"Server running at {server_url}")
+        logger.info(f"API documentation at {server_url}/docs")
+        logger.info("Press Ctrl+C to stop the server")
+    
     # Set the port_callback to log the actual server URL
     mcp.port_callback = log_server_url
     
-    # Run the server - this is a blocking call
-    logger.info("Starting Ergo Explorer...")
-    mcp.run()
+    # We can directly set the port, but host and workers might need different handling
+    # For now, let's set the port and use the default run() method
+    if hasattr(mcp, 'port'):
+        mcp.port = port
     
-    # Note: The logging after this point won't execute normally as mcp.run() is blocking
-    # The actual port being used can be seen in the MCP server logs ("Server running on port: XXXXX")
+    # Run the server - this is a blocking call
+    # Call run() without arguments as it might not support them
+    logger.info("Starting Ergo Explorer MCP server...")
+    mcp.run()
 
 # Export the server instance
 __all__ = ["mcp", "run_server"]

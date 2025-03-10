@@ -42,4 +42,45 @@ async def fetch_box(box_id: str) -> Dict:
 async def search_tokens(query: str) -> Dict:
     """Search for tokens by ID or symbol."""
     params = {"query": query}
-    return await fetch_api("tokens/search", params=params) 
+    return await fetch_api("tokens/search", params=params)
+
+async def fetch_blocks_at_height(height: int) -> List[Dict]:
+    """
+    Fetch blocks at a specific height.
+    
+    Args:
+        height: The block height to fetch
+        
+    Returns:
+        A list of blocks at the specified height
+    """
+    return await fetch_api(f"blocks/at/{height}")
+
+async def fetch_latest_blocks(limit: int = 10, offset: int = 0) -> Dict:
+    """
+    Fetch the latest blocks from the blockchain.
+    
+    Args:
+        limit: Maximum number of blocks to retrieve
+        offset: Number of blocks to skip
+        
+    Returns:
+        A dictionary containing the latest blocks
+    """
+    params = {"limit": limit, "offset": offset}
+    return await fetch_api("blocks", params=params)
+
+async def fetch_block_transactions(block_id: str, limit: int = 100, offset: int = 0) -> Dict:
+    """
+    Fetch transactions for a specific block.
+    
+    Args:
+        block_id: The ID of the block
+        limit: Maximum number of transactions to retrieve
+        offset: Number of transactions to skip
+        
+    Returns:
+        A dictionary containing the block's transactions
+    """
+    params = {"limit": limit, "offset": offset}
+    return await fetch_api(f"blocks/{block_id}/transactions", params=params) 

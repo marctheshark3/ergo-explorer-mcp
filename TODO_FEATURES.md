@@ -8,15 +8,15 @@ This document outlines planned features and enhancements for the Ergo MCP Server
 
 | Feature | Description | API Required | Status |
 |---------|-------------|--------------|--------|
-| `get_block_by_height` | Retrieve block data by height | Ergo Explorer API | To Do |
-| `get_block_by_hash` | Retrieve block data by hash | Ergo Explorer API | To Do |
-| `get_latest_blocks` | Get most recent blocks (with pagination) | Ergo Explorer API | To Do |
-| `get_block_transactions` | Get all transactions in a block | Ergo Explorer API | To Do |
-| `get_network_hashrate` | Get current network hashrate | Ergo Explorer API | To Do |
-| `get_mining_difficulty` | Get current mining difficulty | Ergo Explorer API | To Do |
-| `get_blockchain_stats` | Get overall blockchain statistics | Ergo Explorer API | To Do |
-| `get_mempool_info` | Get current mempool status and pending transactions | Node API | To Do |
-| `get_token_price` | Get current price of a token | DEX APIs | To Do |
+| `get_block_by_height` | Retrieve block data by height | Ergo Explorer API | Completed |
+| `get_block_by_hash` | Retrieve block data by hash | Ergo Explorer API | Completed |
+| `get_latest_blocks` | Get most recent blocks (with pagination) | Ergo Explorer API | Completed |
+| `get_block_transactions` | Get all transactions in a block | Ergo Explorer API | Completed |
+| `get_network_hashrate` | Get current network hashrate | Ergo Explorer API | Completed |
+| `get_mining_difficulty` | Get current mining difficulty | Ergo Explorer API | Completed |
+| `get_blockchain_stats` | Get overall blockchain statistics | Ergo Explorer API | Completed |
+| `get_mempool_info` | Get current mempool status and pending transactions | Node API | Completed |
+| `get_token_price` | Get current price of a token | DEX APIs | Completed |
 
 ### Phase 2 (Medium Priority)
 

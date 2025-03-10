@@ -84,4 +84,46 @@ async def get_network_info_node() -> Dict:
 
 async def get_node_wallet_addresses() -> List[str]:
     """Get all wallet addresses from the node wallet."""
-    return await fetch_node_api("wallet/addresses") 
+    return await fetch_node_api("wallet/addresses")
+
+# Mempool-related endpoints
+async def get_mempool_transactions_node(offset: int = 0, limit: int = 100) -> Dict:
+    """
+    Get transactions currently in the mempool.
+    
+    Args:
+        offset: Number of transactions to skip
+        limit: Maximum number of transactions to return
+        
+    Returns:
+        A dictionary containing mempool transactions
+    """
+    return await fetch_node_api("transactions/unconfirmed", params={"offset": offset, "limit": limit})
+
+async def get_mempool_size_node() -> Dict:
+    """
+    Get the current size of the mempool.
+    
+    Returns:
+        A dictionary containing the mempool size
+    """
+    return await fetch_node_api("transactions/unconfirmed/size")
+
+async def get_mempool_statistics_node() -> Dict:
+    """
+    Get detailed statistics about the mempool.
+    
+    Returns:
+        A dictionary containing mempool statistics
+    """
+    # Fetch both the mempool transactions and size
+    transactions = await get_mempool_transactions_node(limit=1000)  # Get up to 1000 transactions
+    size = await get_mempool_size_node()
+    
+    # Combine the data
+    mempool_data = {
+        "size": size.get("size", 0),
+        "transactions": transactions
+    }
+    
+    return mempool_data 
